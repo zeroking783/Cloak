@@ -4,6 +4,8 @@ services:
   
   db:
     image: postgres
+    env_file:
+      - /home/Projects/Cloak_secrets/.env
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -12,7 +14,7 @@ services:
       - '5433:5432'
     volumes:
       - ./db:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - /home/Project/Cloak_secrets/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
     container_name: cloak_postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U bot_user -d bot_db"]
@@ -22,6 +24,8 @@ services:
 
   main_app:
     image: bakvivas/cloak_main:latest
+    env_file:
+      - /home/Projects/Cloak_secrets/.env
     build:
       context: ./main
     environment:
@@ -36,6 +40,8 @@ services:
 
   cleaning_old_users:
     image: bakvivas/cloak_cleaning:latest
+    env_file:
+      - /home/Projects/Cloak_secrets/.env
     build:
       context: ./daily
     environment:

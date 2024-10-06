@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    restart: always
+    ports:
+      - '5433:5432'
+    volumes:
+      - ./db:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    container_name: cloak_postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bot_user -d bot_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  main_app:
+    image: bakvivas/cloak_main:latest
+    build:
+      context: ./main
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SERVERS_URL=${SERVERS_URL}
+      - BOT_API_TOKEN=${BOT_API_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+
+  cleaning_old_users:
+    image: bakvivas/cloak_cleaning:latest
+    build:
+      context: ./daily
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SERVERS_URL=${SERVERS_URL}
+      - BOT_API_TOKEN=${BOT_API_TOKEN}
+    depends_on:
+      - db
+      - main_app
+    restart: always

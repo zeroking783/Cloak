@@ -1,0 +1,5 @@
+/.env
+/init.sql
+/db
+/daily/crontab
+/.gitlab-ci.yml

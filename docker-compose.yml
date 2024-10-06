@@ -5,7 +5,7 @@ services:
   db:
     image: postgres
     env_file:
-      - /home/Projects/Cloak_secrets/.env
+      - /home/Project/Cloak_secrets/.env
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -25,7 +25,7 @@ services:
   main_app:
     image: bakvivas/cloak_main:latest
     env_file:
-      - /home/Projects/Cloak_secrets/.env
+      - /home/Project/Cloak_secrets/.env
     build:
       context: ./main
     environment:
@@ -41,7 +41,7 @@ services:
   cleaning_old_users:
     image: bakvivas/cloak_cleaning:latest
     env_file:
-      - /home/Projects/Cloak_secrets/.env
+      - /home/Project/Cloak_secrets/.env
     build:
       context: ./daily
     environment:
@@ -52,3 +52,9 @@ services:
       - db
       - main_app
     restart: always
+
+  check_env:
+    image: alpine
+    command: ["env"]
+    env_file:
+      - /home/Project/Cloak_secrets/.env	

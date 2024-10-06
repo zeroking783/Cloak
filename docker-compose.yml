@@ -55,6 +55,6 @@ services:
 
   check_env:
     image: alpine
-    command: ["env"]
     env_file:
-      - /home/Project/Cloak_secrets/.env	
+      - /home/Project/Cloak_secrets/.env
+    command: ["env"]

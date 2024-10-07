@@ -16,8 +16,6 @@ load_dotenv()
 BOT_API_TOKEN = os.getenv("BOT_API_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-logging.basicConfig(level=logging.INFO)
-
 bot = Bot(token=BOT_API_TOKEN)
 
 dp = Dispatcher()
@@ -25,30 +23,37 @@ db = Database(dsn=DATABASE_URL)
 
 
 
-
+# Пока делаю с учетом того, что ее нажмут только в самом начале
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    user_id = message.from_user.id
-    username = message.from_user.username
-
+    
     await bot.delete_message(message.chat.id, message.message_id)
 
-    # if not await get_user_state(message.from_user.id) == "main_menu":
     await send_main_menu(message.from_user.id, message.from_user.username)
 
     query = "INSERT INTO users (user_id, username, state) VALUES ($1, $2, $3) ON CONFLICT (user_id) DO NOTHING"
-    await db.execute(query, user_id, username, "main_menu")
+    await db.execute(query, message.from_user.id, message.from_user.username, "main")
 
-    await update_state(message.from_user.id, "main_menu")
+    await update_state(message.from_user.id, "main")
 
 
-# Вызов главного меню командой
+
 @dp.message(Command("main"))
-async def main_menu_command(message: types.Message):
-    await update_state(message.from_user.id, "main_menu")
+async def cmd_start(message: types.Message):
     await bot.delete_message(message.chat.id, message.message_id)
-    if not await get_user_state(message.from_user.id) == "main_menu":
-        await send_main_menu(message.from_user.id, message.from_user.username)
+
+    await send_main_menu(message.from_user.id, message.from_user.username)
+
+    await update_state(message.from_user.id, "main")
+
+
+# Вызов главного меню командой (Пока просто нет такой кнопки)
+# @dp.message(Command("main"))
+# async def main_menu_command(message: types.Message):
+#     await update_state(message.from_user.id, "main")
+#     await bot.delete_message(message.chat.id, message.message_id)
+#     if not await get_user_state(message.from_user.id) == "main":
+#         await send_main_menu(message.from_user.id, message.from_user.username)
 
 
 

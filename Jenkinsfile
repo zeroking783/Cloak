@@ -20,25 +20,37 @@ pipeline {
             }
         }
 
-        stage('delete last docker-compose') {
+        stage('Delete Last Docker Compose') {
             steps {
-                echo '========start delete last docker-compose========'
-                sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env down -v'
+                script {
+                    dir('/home/Project/Cloak') {  // Добавляем dir
+                        echo '========start delete last docker-compose========'
+                        sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env down -v'
+                    }
+                }
             }
         }
 
-        stage('build docker-compose') {
+        stage('Build Docker Compose') {
             steps {
-                echo '========start build docker-compose========'
-                sh 'cp /home/Project/Cloak_secrets/crontab /home/Project/Cloak/daily'
-                sh 'docker-compose build'
+                script {
+                    dir('/home/Project/Cloak') {  // Добавляем dir
+                        echo '========start build docker-compose========'
+                        sh 'cp /home/Project/Cloak_secrets/crontab /home/Project/Cloak/daily'
+                        sh 'docker-compose build'
+                    }
+                }
             }
         }
 
-        stage('up docker-compose') {
+        stage('Up Docker Compose') {
             steps {
-                echo '========up docker-compose========'
-                sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env up -d'
+                script {
+                    dir('/home/Project/Cloak') {  // Добавляем dir
+                        echo '========up docker-compose========'
+                        sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env up -d'
+                    }
+                }
             }
         }
     }

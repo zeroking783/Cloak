@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Check and Delete DB Directory') {
+            steps {
+                script {
+                    def dbDir = '/home/Project/Cloak/db'
+                    if (fileExists(dbDir)) {
+                        echo "========Directory ${dbDir} exists. Deleting it...========"
+                        sh "rm -rf ${dbDir}"
+                    } else {
+                        echo "========Directory ${dbDir} does not exist. No action needed.========"
+                    }
+                }
+            }
+        }
+    }
+}

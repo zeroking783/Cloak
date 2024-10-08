@@ -21,7 +21,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    entrypoint: ["sh", "-c", "chmod 777 /var/lib/postgresql/data && exec docker-entrypoint.sh postgres"]
+    user: "${UID}:${GID}"
+    entrypoint: ["sh", "-c", "chmod -R 770 /var/lib/postgresql/data && exec docker-entrypoint.sh postgres"]
 
   main_app:
     image: bakvivas/cloak_main:latest

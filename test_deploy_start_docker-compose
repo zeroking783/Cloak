@@ -22,3 +22,4 @@ ci/cd present
 test delete db
 edit test new jenkins 
 test
+test delete db

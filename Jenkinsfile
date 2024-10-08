@@ -11,7 +11,7 @@ pipeline {
         stage('delete last docker-compose') {
             steps {
                 echo '========start delete last docker-compose========'
-                sh 'docker-compose down -v'
+                sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env down -v'
             }
         }
 

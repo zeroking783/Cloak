@@ -22,7 +22,7 @@ services:
       timeout: 5s
       retries: 5
     user: "${UID}:${GID}"
-    
+
   main_app:
     image: bakvivas/cloak_main:latest
     env_file:

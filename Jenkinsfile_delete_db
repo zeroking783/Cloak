@@ -11,13 +11,38 @@ pipeline {
         stage('All Clean Containers, Images') {
             steps {
                 echo '========START STOP CONTAINERS========'
-                sh 'docker stop $(docker ps -aq) || true'
+                script {
+                    def runningContainers = sh(script: "docker ps -q", returnStdout: true).trim()
+                    if (runningContainers) {
+                        sh 'docker stop $(docker ps -aq)'
+                        echo '========CONTAINERS STOPPED========'
+                    } else {
+                        echo '========NO RUNNING CONTAINERS========'
+                    }
+                }
+
 
                 echo '========START DELETE CONTAINERS========'
-                sh 'docker rm $(docker ps -aq) || true'
+                script {
+                    def allContainers = sh(script: "docker ps -aq", returnStdout: true).trim()
+                    if (allContainers) {
+                        sh 'docker rm $(docker ps -aq)'
+                        echo '========CONTAINERS DELETED========'
+                    } else {
+                        echo '========NO CONTAINERS TO DELETE========'
+                    }
+                }
 
                 echo '========START DELETE IMAGES========'
-                sh 'docker rmi $(docker images -q) || true'
+                script {
+                    def allImages = sh(script: "docker images -q", returnStdout: true).trim()
+                    if (allImages) {
+                        sh 'docker rmi $(docker images -q)'
+                        echo '========IMAGES DELETED========'
+                    } else {
+                        echo '========NO IMAGES TO DELETE========'
+                    }
+                }
 
                 echo '========CLEAN COMPLETE========'
             }

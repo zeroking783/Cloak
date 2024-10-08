@@ -21,6 +21,7 @@ pipeline {
 
                 echo '========CLEAN COMPLETE========'
             }
+        }
 
         stage('Check and Delete DB Directory') {
             steps {

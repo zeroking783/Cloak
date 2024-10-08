@@ -8,6 +8,18 @@ pipeline {
             }
         }
 
+        stage('Checkout') {
+            steps {
+                script {
+                    def workspaceDir = '/home/Project/Cloak'
+                    sh "mkdir -p ${workspaceDir}"
+                    dir("${workspaceDir}") {
+                        checkout scm
+                    }
+                }
+            }
+        }
+
         stage('delete last docker-compose') {
             steps {
                 echo '========start delete last docker-compose========'

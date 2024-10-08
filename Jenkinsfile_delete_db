@@ -2,15 +2,35 @@ pipeline {
     agent any
 
     stages {
+        stage('My-support') {
+            steps {
+                echo '========START DELETE DB DIRECTORY========'
+            }
+        }
+
+        stage('All Clean Containers, Images') {
+            steps {
+                echo '========START STOP CONTAINERS========'
+                sh 'docker stop $(docker ps -aq) || true'
+
+                echo '========START DELETE CONTAINERS========'
+                sh 'docker rm $(docker ps -aq) || true'
+
+                echo '========START DELETE IMAGES========'
+                sh 'docker rmi $(docker images -q) || true'
+
+                echo '========CLEAN COMPLETE========'
+            }
+
         stage('Check and Delete DB Directory') {
             steps {
                 script {
                     def dbDir = '/home/Project/Cloak/db'
                     if (fileExists(dbDir)) {
-                        echo "========Directory ${dbDir} exists. Deleting it...========"
+                        echo "========DIRECTORY ${dbDir} EXISTS. DELETING IT...========"
                         sh "rm -rf ${dbDir}"
                     } else {
-                        echo "========Directory ${dbDir} does not exist. No action needed.========"
+                        echo "========DIRECTORY ${dbDir} DOES NOT EXISTS. NO ACTION NEEDED.========"
                     }
                 }
             }

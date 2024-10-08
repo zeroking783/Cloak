@@ -21,9 +21,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    user: "postgres"
-    entrypoint: ["sh", "-c", "chown -R postgres:docker_db_access /var/lib/postgresql/data && chmod -R 770 /var/lib/postgresql/data && exec postgres"]
-
+    
   main_app:
     image: bakvivas/cloak_main:latest
     env_file:

@@ -15,14 +15,12 @@ services:
     volumes:
       - ./db:/var/lib/postgresql/data
       - /home/Project/Cloak_secrets/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
-      - /home/Project/Cloak_secrets/fix-permissions.sh:/docker-entrypoint-initdb.d/fix-permissions.sh
     container_name: cloak_postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U bot_user -d bot_db"]
       interval: 5s
       timeout: 5s
       retries: 5
-    user: "postgres"
 
 
   main_app:

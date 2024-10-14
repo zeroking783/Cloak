@@ -31,6 +31,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - SERVERS_URL=${SERVERS_URL}
       - BOT_API_TOKEN=${BOT_API_TOKEN}
+      - TIME_GET_CLIENT=${TIME_GET_CLIENT}
+      - GB_GET_CLIENT=${GB_GET_CLIENT}
     depends_on:
       db:
         condition: service_healthy
@@ -47,6 +49,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - SERVERS_URL=${SERVERS_URL}
       - BOT_API_TOKEN=${BOT_API_TOKEN}
+      - TIME_GET_CLIENT=${TIME_GET_CLIENT}
+      - GB_GET_CLIENT=${GB_GET_CLIENT}
     depends_on:
       - db
       - main_app

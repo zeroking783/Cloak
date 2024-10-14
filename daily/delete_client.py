@@ -1,5 +1,3 @@
-from calendar import weekday
-
 import requests
 import json
 from datetime import datetime

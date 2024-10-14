@@ -106,16 +106,6 @@ async def send_main_menu(user_id, username):
         WHERE user_id = $1
         """
         info_connection = await db.fetchrow(query_info_connection, user_id)
-        
-        if info_connection is None:
-            # Запись подключения отсутствует, логируем ошибку и отправляем сообщение пользователю
-            logging.error(f"User ID {user_id} имеет активное подключение, но запись в 'connections' отсутствует.")
-            await bot.send_message(
-                user_id,
-                f"Произошла ошибка при получении информации о вашем подключении. Пожалуйста, свяжитесь с администратором.",
-                parse_mode=ParseMode.HTML
-            )
-            return
 
         await bot.send_message(
             user_id,

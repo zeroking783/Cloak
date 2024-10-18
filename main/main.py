@@ -271,7 +271,13 @@ async def approve_payment(callback: types.CallbackQuery):
     best_server = await find_server()
     best_server.append(username)
     best_server.append(user_id)
+
+    print("START CREATE NEW CLIENT")
+    print(GB_GET_CLIENT)
+
     info_connections = await new_client(best_server)
+
+    print("END CREATE NEW CLIENT")
 
     query_add_client = """
             INSERT INTO connections (user_id, username, url_client, uuid, ip_server, paid_up_to_time, spent_gb)

@@ -35,13 +35,10 @@ async def cmd_start(message: types.Message):
     
     await bot.delete_message(message.chat.id, message.message_id)
 
-    await send_main_menu(message.from_user.id, message.from_user.username)
-
     query = "INSERT INTO users (user_id, username, state) VALUES ($1, $2, $3) ON CONFLICT (user_id) DO NOTHING"
-    await db.execute(query, message.from_user.id, message.from_user.username, "main")
+    await db.execute(query, message.from_user.id, message.from_user.username, "start")
 
-    await update_state(message.from_user.id, "main")
-
+    await send_main_menu(message.from_user.id, message.from_user.username)
 
 
 @dp.message(Command("main"))
@@ -51,8 +48,6 @@ async def cmd_start(message: types.Message):
 
     if not await get_user_state(message.from_user.id) == "main":
         await send_main_menu(message.from_user.id, message.from_user.username)
-        await update_state(message.from_user.id, "main")
-
 
 
 # Вызов главного меню командой (Пока просто нет такой кнопки)
@@ -64,9 +59,10 @@ async def cmd_start(message: types.Message):
 #         await send_main_menu(message.from_user.id, message.from_user.username)
 
 
-
 # Главное меню
 async def send_main_menu(user_id, username):
+
+    await update_state(user_id, "main")
 
     query = "SELECT name_client FROM users WHERE user_id = $1"
     name_client = await db.fetchval(query, user_id)
@@ -106,7 +102,7 @@ async def send_main_menu(user_id, username):
     builder_user.adjust(1)
 
     # Проверяем, имеет ли пользователь активное подключение
-    if await check_cell_connection(user_id):
+    if await check_wait_approve_pay(user_id) == "have_connection":
         # Пользователь имеет активное подключение
         query_info_connection = """
         SELECT url_client, paid_up_to_time, spent_gb
@@ -131,8 +127,9 @@ async def send_main_menu(user_id, username):
             parse_mode=ParseMode.HTML,
             reply_markup=builder_user.as_markup()
         )
-    else:
-        # Пользователь не имеет активного подключения
+    # Пользователь не имеет активного подключения
+    elif await check_wait_approve_pay(user_id) == "not_connection":
+        # Пользователь зарегестрирован
         if await db.fetchval(query, user_id):
             await bot.send_message(
                 user_id,
@@ -143,6 +140,7 @@ async def send_main_menu(user_id, username):
                 parse_mode=ParseMode.HTML,
                 reply_markup=builder_full.as_markup()
             )
+        # Пользователь не зарегестрирован
         else:
             await bot.send_message(
                 user_id,
@@ -151,6 +149,17 @@ async def send_main_menu(user_id, username):
                 parse_mode=ParseMode.HTML,
                 reply_markup=builder_full.as_markup()
             )
+    elif await check_wait_approve_pay(user_id) == "wait_approve":
+        await bot.send_message(
+            user_id,
+             f"tg_username: <b>{username}</b>\n"
+                f"tg_id: <b>{user_id}</b>\n"
+                f"<b>ОЖИДАЕТ ПОДТВЕРЖДЕНИЯ</b>"
+                f"Регистрационное имя:\n"
+                f"<b>{name_client}</b>",
+                parse_mode=ParseMode.HTML,
+                reply_markup=builder_user.as_markup()
+        )
 
 
 # Кнопка, которая создает новое подключение
@@ -171,6 +180,9 @@ async def create_connections(callback: types.CallbackQuery):
             show_alert=True
         )
     else:
+
+        await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+
         await update_state(callback.from_user.id, "wait_send_money")
 
         if await user_present_in_the_table(callback.from_user.id) or await user_is_always_true(callback.from_user.id):
@@ -186,9 +198,8 @@ async def create_connections(callback: types.CallbackQuery):
         await bot.send_message(
             callback.from_user.id,
             text="<b>Читай внимательно</b>\nТебе нужно "
-                 "отправить 70 рублей на Сбербанк по номеру телефона 89874410512. "
-                 "После платежа обязательно нажми кнопку 'Отправил' под этим сообщением. "
-                 "Если ты не нажмешь кнопку",
+                 "отправить 40 рублей на Сбербанк по номеру телефона 89874410512. "
+                 "После платежа обязательно нажми кнопку 'ОТПРАВИЛ' под этим сообщением. ",
             parse_mode=ParseMode.HTML,
             reply_markup=builder.as_markup()
         )
@@ -196,6 +207,11 @@ async def create_connections(callback: types.CallbackQuery):
 # Кнопка, которая создает новое подключение
 @dp.callback_query(F.data == "send_money_is_done")
 async def create_connections(callback: types.CallbackQuery):
+
+    await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+
+    await send_main_menu(callback.from_user.id, callback.from_user.username)
+
     query_1 = """
     UPDATE payments_record 
     SET payment_processed = True, data_payment = NOW() 
@@ -407,6 +423,30 @@ async def it_is_new_create_connection(user_id):
              "END as result;")
     otvet = await db.fetchval(query, user_id)
     return otvet
+
+async def check_wait_approve_pay(user_id):
+    query = """
+        SELECT payments_processed, payments_approval
+        FROM payments_record
+        WHERE user_id = $1
+        AND id_payment = (
+            SELECT MAX(id_payment)
+            FROM payments_record
+            WHERE user_id = $1
+        )
+        """
+
+    result = await db.fetchrow(query, user_id)
+
+    payments_processed = result['payments_processed']
+    payments_approval = result['payments_approval']
+
+    if payments_processed == False and payments_approval == False:
+        return "not_connection"
+    elif payments_processed == True and payments_approval == False:
+        return "wait_approve"
+    elif payments_processed == True and payments_approval == True:
+        return "have_connection"
 
 
 async def main():

@@ -157,7 +157,7 @@ async def create_connections(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.add(
         types.InlineKeyboardButton(
-            text="Отправил",
+            text="ОТПРАВИЛ",
             callback_data="send_money_is_done"
         )
     )

@@ -19,8 +19,6 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 TIME_DAYS_GET_CLIENT = os.getenv("TIME_DAYS_GET_CLIENT")
 GB_GET_CLIENT = os.getenv("GB_GET_CLIENT")
 
-logging.info(GB_GET_CLIENT)
-
 bot = Bot(token=BOT_API_TOKEN)
 
 dp = Dispatcher()
@@ -29,6 +27,7 @@ db = Database(dsn=DATABASE_URL)
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
+logging.info(GB_GET_CLIENT)
 
 # Пока делаю с учетом того, что ее нажмут только в самом начале
 @dp.message(Command("start"))

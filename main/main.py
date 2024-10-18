@@ -101,6 +101,8 @@ async def send_main_menu(user_id, username):
     )
     builder_user.adjust(1)
 
+    logging.info(str(await check_wait_approve_pay(user_id)))
+
     # Проверяем, имеет ли пользователь активное подключение
     if await check_wait_approve_pay(user_id) == "have_connection":
         # Пользователь имеет активное подключение
@@ -149,6 +151,7 @@ async def send_main_menu(user_id, username):
                 parse_mode=ParseMode.HTML,
                 reply_markup=builder_full.as_markup()
             )
+    # Пользователь ожидает одобрение админа
     elif await check_wait_approve_pay(user_id) == "wait_approve":
         await bot.send_message(
             user_id,
@@ -439,6 +442,8 @@ async def check_wait_approve_pay(user_id):
         """
 
     result = await db.fetchrow(query, user_id)
+
+    logging.info(result)
 
     if result is None:
         return "not_connection"

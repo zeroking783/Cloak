@@ -8,6 +8,7 @@ from aiogram.enums import ParseMode
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import F
 import os
+
 from find_empty_server import find_server
 from new_client import *
 
@@ -16,6 +17,7 @@ load_dotenv()
 BOT_API_TOKEN = os.getenv("BOT_API_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
 TIME_GET_CLIENT = os.getenv("TIME_GET_CLIENT")
+GB_GET_CLIENT = os.getenv("GB_GET_CLIENT")
 
 bot = Bot(token=BOT_API_TOKEN)
 
@@ -117,7 +119,7 @@ async def send_main_menu(user_id, username):
             f"Активно до:\n"
             f"<b>{info_connection['paid_up_to_time']}</b>\n"
             f"Гб осталось\n"
-            f"<b>{70 - info_connection['spent_gb']}</b>\n"
+            f"<b>{int(GB_GET_CLIENT) - info_connection['spent_gb']}</b>\n"
             "Твоя ссылка для подключения:\n"
             f"<code>{info_connection['url_client']}</code>\n"
             f"Регистрационное имя:\n"

@@ -440,6 +440,9 @@ async def check_wait_approve_pay(user_id):
 
     result = await db.fetchrow(query, user_id)
 
+    if result is None:
+        return "not_connection"
+
     payment_processed = result['payment_processed']
     payment_approval = result['payment_approval']
 

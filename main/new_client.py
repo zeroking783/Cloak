@@ -3,7 +3,7 @@ import requests
 import json
 import uuid
 from dateutil.relativedelta import relativedelta
-from main import TIME_GET_CLIENT
+from main import TIME_DAYS_GET_CLIENT
 
 async def new_client(best_server):
 

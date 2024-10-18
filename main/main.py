@@ -16,7 +16,7 @@ load_dotenv()
 
 BOT_API_TOKEN = os.getenv("BOT_API_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
-TIME_GET_CLIENT = os.getenv("TIME_GET_CLIENT")
+TIME_DAYS_GET_CLIENT = os.getenv("TIME_DAYS_GET_CLIENT")
 GB_GET_CLIENT = os.getenv("GB_GET_CLIENT")
 
 logging.info(GB_GET_CLIENT)

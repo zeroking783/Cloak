@@ -32,22 +32,27 @@ logging.info(TIME_DAYS_GET_CLIENT)
 # Пока делаю с учетом того, что ее нажмут только в самом начале
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    
-    await bot.delete_message(message.chat.id, message.message_id)
+
+    try:
+        await update_state(message.from_user.id, "start")
+    except Exception as e:
+        logging.error(f"Ошибка при вызове /start: {e}")
 
     query = "INSERT INTO users (user_id, username, state, instruction_id) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO NOTHING"
     await db.execute(query, message.from_user.id, message.from_user.username, "start", 1)
 
     await send_main_menu(message)
 
+    await bot.delete_message(message.chat.id, message.message_id)
+
 
 @dp.message(Command("main"))
 async def cmd_start(message: types.Message):
 
-    await bot.delete_message(message.chat.id, message.message_id)
-
     if not await get_user_state(message.from_user.id) == "main":
         await send_main_menu(message)
+
+    await bot.delete_message(message.chat.id, message.message_id)
 
 
 # Вызов главного меню командой (Пока просто нет такой кнопки)
@@ -65,7 +70,9 @@ async def send_main_menu(message):
     if await get_user_state(message.from_user.id) == "input_name":
         query_get_instruction_id = "SELECT instruction_id FROM users WHERE user_id = $1"
         instruction_id = await db.fetchval(query_get_instruction_id, message.from_user.id)
-        await bot.delete_message(message.chat.id, instruction_id)
+
+        if instruction_id:
+            await bot.delete_message(message.chat.id, instruction_id)
 
     await update_state(message.from_user.id, "main")
 

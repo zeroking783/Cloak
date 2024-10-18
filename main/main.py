@@ -7,6 +7,7 @@ from aiogram.enums import ParseMode
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import F
 import os
+import logging
 
 from find_empty_server import find_server
 from new_client import *
@@ -18,11 +19,15 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 TIME_GET_CLIENT = os.getenv("TIME_GET_CLIENT")
 GB_GET_CLIENT = os.getenv("GB_GET_CLIENT")
 
+logging.info(GB_GET_CLIENT)
+
 bot = Bot(token=BOT_API_TOKEN)
 
 dp = Dispatcher()
 db = Database(dsn=DATABASE_URL)
 
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 # Пока делаю с учетом того, что ее нажмут только в самом начале
@@ -271,12 +276,12 @@ async def approve_payment(callback: types.CallbackQuery):
     best_server.append(username)
     best_server.append(user_id)
 
-    print("START CREATE NEW CLIENT")
-    print(GB_GET_CLIENT)
+    logging.info("START CREATE NEW CLIENT")
+    logging.info(GB_GET_CLIENT)
 
     info_connections = await new_client(best_server)
 
-    print("END CREATE NEW CLIENT")
+    logging.info("END CREATE NEW CLIENT")
 
     query_add_client = """
             INSERT INTO connections (user_id, username, url_client, uuid, ip_server, paid_up_to_time, spent_gb)
@@ -287,8 +292,8 @@ async def approve_payment(callback: types.CallbackQuery):
     await db.execute(query_add_client, user_id, username, info_connections[0],
                      info_connections[1], info_connections[2], info_connections[3], 0)
 
-    print(f"!!!!! USER_ID : {user_id}")
-    print(f"!!!! INFO_CONNECTIONS: {info_connections}")
+    logging.info(f"!!!!! USER_ID : {user_id}")
+    logging.info(f"!!!! INFO_CONNECTIONS: {info_connections}")
     await bot.send_message(
         user_id,
         text=info_connections[0]

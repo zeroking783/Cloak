@@ -211,16 +211,16 @@ async def create_connections(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "send_money_is_done")
 async def create_connections(callback: types.CallbackQuery):
 
+    query_1 = """
+        UPDATE payments_record 
+        SET payment_processed = True, data_payment = NOW() 
+        WHERE user_id = $1 AND payment_processed = False
+        """
+    await db.execute(query_1, callback.from_user.id)
+
     await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
 
     await send_main_menu(callback.from_user.id, callback.from_user.username)
-
-    query_1 = """
-    UPDATE payments_record 
-    SET payment_processed = True, data_payment = NOW() 
-    WHERE user_id = $1 AND payment_processed = False
-    """
-    await db.execute(query_1, callback.from_user.id)
 
     query_2 = """
     SELECT id_payment FROM payments_record WHERE user_id = $1 AND payment_processed = True AND payment_approval = False

@@ -35,24 +35,26 @@ async def cmd_start(message: types.Message):
 
     try:
         await update_state(message.from_user.id, "start")
+
+        query = "INSERT INTO users (user_id, username, state, instruction_id) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO NOTHING"
+        await db.execute(query, message.from_user.id, message.from_user.username, "start", 1)
+
+        await send_main_menu(message)
+
+        await bot.delete_message(message.chat.id, message.message_id)
     except Exception as e:
         logging.error(f"Ошибка при вызове /start: {e}")
-
-    query = "INSERT INTO users (user_id, username, state, instruction_id) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO NOTHING"
-    await db.execute(query, message.from_user.id, message.from_user.username, "start", 1)
-
-    await send_main_menu(message)
-
-    await bot.delete_message(message.chat.id, message.message_id)
-
 
 @dp.message(Command("main"))
 async def cmd_start(message: types.Message):
 
-    if not await get_user_state(message.from_user.id) == "main":
-        await send_main_menu(message)
+    try:
+        if not await get_user_state(message.from_user.id) == "main":
+            await send_main_menu(message)
 
-    await bot.delete_message(message.chat.id, message.message_id)
+        await bot.delete_message(message.chat.id, message.message_id)
+    except Exception as e:
+        logging.error(f"Ошибка при вызове /main: {e}")
 
 
 # Вызов главного меню командой (Пока просто нет такой кнопки)
@@ -67,14 +69,17 @@ async def cmd_start(message: types.Message):
 # Главное меню
 async def send_main_menu(message):
 
-    if await get_user_state(message.from_user.id) == "input_name":
-        query_get_instruction_id = "SELECT instruction_id FROM users WHERE user_id = $1"
-        instruction_id = await db.fetchval(query_get_instruction_id, message.from_user.id)
+    try:
+        if await get_user_state(message.from_user.id) == "input_name":
+            query_get_instruction_id = "SELECT instruction_id FROM users WHERE user_id = $1"
+            instruction_id = await db.fetchval(query_get_instruction_id, message.from_user.id)
 
-        if instruction_id:
-            await bot.delete_message(message.chat.id, instruction_id)
+            if instruction_id:
+                await bot.delete_message(message.chat.id, instruction_id)
 
-    await update_state(message.from_user.id, "main")
+        await update_state(message.from_user.id, "main")
+    except Exception as e:
+        logging.error(f"Ошибка при удалении регистрационной инструкции: {e}")
 
     query = "SELECT name_client FROM users WHERE user_id = $1"
     name_client = await db.fetchval(query, message.from_user.id)

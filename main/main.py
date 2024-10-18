@@ -27,7 +27,7 @@ db = Database(dsn=DATABASE_URL)
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-logging.info(GB_GET_CLIENT)
+logging.info(TIME_DAYS_GET_CLIENT)
 
 # Пока делаю с учетом того, что ее нажмут только в самом начале
 @dp.message(Command("start"))
@@ -276,7 +276,7 @@ async def approve_payment(callback: types.CallbackQuery):
     best_server.append(user_id)
 
     logging.info("START CREATE NEW CLIENT")
-    logging.info(GB_GET_CLIENT)
+    logging.info(TIME_DAYS_GET_CLIENT)
 
     info_connections = await new_client(best_server)
 

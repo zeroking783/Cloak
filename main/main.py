@@ -45,6 +45,9 @@ async def cmd_start(message: types.Message):
 async def cmd_start(message: types.Message):
 
     await bot.delete_message(message.chat.id, message.message_id)
+
+    print("Состояние пользователя сейчас:", get_user_state(message.from_user.id))
+
     if not get_user_state(message.from_user.id) == "main":
         await send_main_menu(message.from_user.id, message.from_user.username)
         await update_state(message.from_user.id, "main")

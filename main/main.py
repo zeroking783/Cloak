@@ -41,11 +41,12 @@ async def cmd_start(message: types.Message):
 
 @dp.message(Command("main"))
 async def cmd_start(message: types.Message):
+
     await bot.delete_message(message.chat.id, message.message_id)
+    if get_user_state(message.from_user.id) != "main":
+        await send_main_menu(message.from_user.id, message.from_user.username)
+        await update_state(message.from_user.id, "main")
 
-    await send_main_menu(message.from_user.id, message.from_user.username)
-
-    await update_state(message.from_user.id, "main")
 
 
 # Вызов главного меню командой (Пока просто нет такой кнопки)

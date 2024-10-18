@@ -35,10 +35,10 @@ async def cmd_start(message: types.Message):
     
     await bot.delete_message(message.chat.id, message.message_id)
 
-    query = "INSERT INTO users (user_id, username, state) VALUES ($1, $2, $3) ON CONFLICT (user_id) DO NOTHING"
-    await db.execute(query, message.from_user.id, message.from_user.username, "start")
+    query = "INSERT INTO users (user_id, username, state, instruction_id) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO NOTHING"
+    await db.execute(query, message.from_user.id, message.from_user.username, "start", 1)
 
-    await send_main_menu(message.from_user.id, message.from_user.username)
+    await send_main_menu(message)
 
 
 @dp.message(Command("main"))
@@ -47,7 +47,7 @@ async def cmd_start(message: types.Message):
     await bot.delete_message(message.chat.id, message.message_id)
 
     if not await get_user_state(message.from_user.id) == "main":
-        await send_main_menu(message.from_user.id, message.from_user.username)
+        await send_main_menu(message)
 
 
 # Вызов главного меню командой (Пока просто нет такой кнопки)
@@ -60,12 +60,17 @@ async def cmd_start(message: types.Message):
 
 
 # Главное меню
-async def send_main_menu(user_id, username):
+async def send_main_menu(message):
 
-    await update_state(user_id, "main")
+    if await get_user_state(message.from_user.id) == "input_name":
+        query_get_instruction_id = "SELECT instruction_id FROM users WHERE user_id = $1"
+        instruction_id = await db.fetchval(query_get_instruction_id, message.from_user.id)
+        await bot.delete_message(message.chat.id, instruction_id)
+
+    await update_state(message.from_user.id, "main")
 
     query = "SELECT name_client FROM users WHERE user_id = $1"
-    name_client = await db.fetchval(query, user_id)
+    name_client = await db.fetchval(query, message.from_user.id)
 
     builder_full = InlineKeyboardBuilder()
     builder_full.add(
@@ -101,22 +106,22 @@ async def send_main_menu(user_id, username):
     )
     builder_user.adjust(1)
 
-    logging.info(str(await check_wait_approve_pay(user_id)))
+    logging.info(str(await check_wait_approve_pay(message.from_user.id)))
 
     # Проверяем, имеет ли пользователь активное подключение
-    if await check_wait_approve_pay(user_id) == "have_connection":
+    if await check_wait_approve_pay(message.from_user.id) == "have_connection":
         # Пользователь имеет активное подключение
         query_info_connection = """
         SELECT url_client, paid_up_to_time, spent_gb
         FROM connections
         WHERE user_id = $1
         """
-        info_connection = await db.fetchrow(query_info_connection, user_id)
+        info_connection = await db.fetchrow(query_info_connection, message.from_user.id)
 
         await bot.send_message(
-            user_id,
-            f"tg_username: <b>{username}</b>\n"
-            f"tg_id: <b>{user_id}</b>\n"
+            message.from_user.id,
+            f"tg_username: <b>{message.from_user.username}</b>\n"
+            f"tg_id: <b>{message.from_user.id}</b>\n"
             f"У тебя есть активное подключение\n"
             f"Активно до:\n"
             f"<b>{info_connection['paid_up_to_time']}</b>\n"
@@ -130,13 +135,13 @@ async def send_main_menu(user_id, username):
             reply_markup=builder_user.as_markup()
         )
     # Пользователь не имеет активного подключения
-    elif await check_wait_approve_pay(user_id) == "not_connection":
+    elif await check_wait_approve_pay(message.from_user.id) == "not_connection":
         # Пользователь зарегестрирован
-        if await db.fetchval(query, user_id):
+        if await db.fetchval(query, message.from_user.id):
             await bot.send_message(
-                user_id,
-                f"tg_username: <b>{username}</b>\n"
-                f"tg_id: <b>{user_id}</b>\n"
+                message.from_user.id,
+                f"tg_username: <b>{message.from_user.username}</b>\n"
+                f"tg_id: <b>{message.from_user.id}</b>\n"
                 f"Регистрационное имя:\n"
                 f"<b>{name_client}</b>",
                 parse_mode=ParseMode.HTML,
@@ -145,19 +150,19 @@ async def send_main_menu(user_id, username):
         # Пользователь не зарегестрирован
         else:
             await bot.send_message(
-                user_id,
-                f"@tg_username: <b>{username}</b>\n"
-                f"@tg_id: <b>{user_id}</b>\n",
+                message.from_user.id,
+                f"@tg_username: <b>{message.from_user.username}</b>\n"
+                f"@tg_id: <b>{message.from_user.id}</b>\n",
                 parse_mode=ParseMode.HTML,
                 reply_markup=builder_full.as_markup()
             )
     # Пользователь ожидает одобрение админа
-    elif await check_wait_approve_pay(user_id) == "wait_approve":
+    elif await check_wait_approve_pay(message.from_user.id) == "wait_approve":
         await bot.send_message(
-            user_id,
-             f"tg_username: <b>{username}</b>\n"
-                f"tg_id: <b>{user_id}</b>\n"
-                f"<b>ОЖИДАЕТ ПОДТВЕРЖДЕНИЯ</b>"
+            message.from_user.id,
+             f"tg_username: <b>{message.from_user.username}</b>\n"
+                f"tg_id: <b>{message.from_user.id}</b>\n"
+                f"<b>ОЖИДАЕТ ПОДТВЕРЖДЕНИЯ\n</b>"
                 f"Регистрационное имя:\n"
                 f"<b>{name_client}</b>",
                 parse_mode=ParseMode.HTML,
@@ -184,7 +189,7 @@ async def create_connections(callback: types.CallbackQuery):
         )
     else:
 
-        await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+        await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
         await update_state(callback.from_user.id, "wait_send_money")
 
@@ -218,9 +223,9 @@ async def create_connections(callback: types.CallbackQuery):
         """
     await db.execute(query_1, callback.from_user.id)
 
-    await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+    await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
-    await send_main_menu(callback.from_user.id, callback.from_user.username)
+    await send_main_menu(callback.message)
 
     query_2 = """
     SELECT id_payment FROM payments_record WHERE user_id = $1 AND payment_processed = True AND payment_approval = False
@@ -345,27 +350,37 @@ async def approve_payment(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "registration")
 async def registration_procedure(callback: types.CallbackQuery):
 
+    await bot.delete_message(callback.message.chat.id, callback.message.message_id)
+
     await update_state(callback.from_user.id, "input_name")
 
-    await bot.edit_message_text(
-        text = f"Для регистрации отправь свое имя, отчество и первую букву фамилии (информация, которая выводится при переводе на карту).\n\n"
-        f"<i>Это нужно исключительно для того, чтобы админ мог проверить оплату VPN.\n</i>"
-        f"<i>Если будут отправленны не те данные, то админ не сможет удостовериться в вашем переводе</i>",
+    instruction_message = await bot.send_message(
+        text=(
+            "Для регистрации отправь свое имя, отчество и первую букву фамилии (информация, "
+            "которая выводится при переводе на карту).\n\n"
+            "<i>Это нужно исключительно для того, чтобы админ мог проверить оплату VPN.\n</i>"
+            "<i>Если будут отправлены не те данные, то админ не сможет удостовериться в вашем переводе</i>"
+        ),
         chat_id=callback.message.chat.id,
-        message_id=callback.message.message_id,
         parse_mode=ParseMode.HTML
     )
+
+    query_save_instruction_id = "UPDATE users SET instruction_id = $1 WHERE user_id = $2"
+    await db.execute(query_save_instruction_id, instruction_message, callback.from_user.id)
+
+
+
 
 # Функция обрабатывает все обычные сообщения от пользователя, пока только ввод имени отчества
 @dp.message(F.text)
 async def save_name_user(message: types.Message):
 
     if await get_user_state(message.from_user.id) == "input_name":
-        query = "UPDATE users SET name_client  = $1 WHERE user_id = $2"
+        query = "UPDATE users SET name_client = $1 WHERE user_id = $2"
         await db.execute(query, message.text, message.from_user.id)
-        await send_main_menu(message.from_user.id, message.from_user.username)
+        await send_main_menu(message)
     else:
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        await bot.delete_message(message.chat.id, message.message_id)
 
 # Функция, которая обновляет состояние пользователя
 async def update_state(user_id, state):

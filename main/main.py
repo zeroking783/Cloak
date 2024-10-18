@@ -45,7 +45,7 @@ async def cmd_start(message: types.Message):
 async def cmd_start(message: types.Message):
 
     await bot.delete_message(message.chat.id, message.message_id)
-    if get_user_state(message.from_user.id) != "main":
+    if not get_user_state(message.from_user.id) == "main":
         await send_main_menu(message.from_user.id, message.from_user.username)
         await update_state(message.from_user.id, "main")
 
@@ -129,7 +129,7 @@ async def send_main_menu(user_id, username):
         )
     else:
         # Пользователь не имеет активного подключения
-        if name_client:
+        if await db.fetchval(query, user_id):
             await bot.send_message(
                 user_id,
                 f"tg_username: <b>{username}</b>\n"

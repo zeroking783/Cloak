@@ -7,7 +7,7 @@ from main import TIME_DAYS_GET_CLIENT
 
 async def new_client(best_server):
 
-    print("TIME_GET_CLIENT:", TIME_GET_CLIENT)
+    print("TIME_GET_CLIENT:", TIME_DAYS_GET_CLIENT)
 
     login_url = f"https://{best_server[0]}:{best_server[1]}/{best_server[4]}/login"
     print(f"!!!! LOGIN URL: {login_url}")

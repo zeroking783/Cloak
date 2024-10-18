@@ -96,9 +96,9 @@ async def new_client(best_server):
         client_link = f"vless://{generated_uuid}@{server_ip}:443?type=tcp&security=reality&pbk={public_key}&fp={fingerprint}&sni={sni}&sid={sid}&spx=%2F&flow=xtls-rprx-vision#vless-reality-{username}"
 
         current_time = datetime.now()
-        paid_up_to_time = current_time + relativedelta(TIME_GET_CLIENT)
+        paid_up_to_time = current_time + relativedelta(TIME_DAYS_GET_CLIENT)
 
-        print("Заданное в TIME_GET_CLIENT:", TIME_GET_CLIENT)
+        print("Заданное в TIME_GET_CLIENT:", TIME_DAYS_GET_CLIENT)
 
         info_connections = [client_link, generated_uuid, server_ip, paid_up_to_time]
 

@@ -10,6 +10,7 @@ from delete_client import *
 BOT_API_TOKEN = os.getenv("BOT_API_TOKEN")
 DATABASE_URL = os.getenv("DATABASE_URL")
 SERVERS_URL = os.getenv("SERVERS_URL")
+GB_GET_CLIENT = os.getenv("GB_GET_CLIENT")
 
 print(f"Вот переменная BOT_API_TOKEN: {BOT_API_TOKEN}")
 

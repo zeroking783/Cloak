@@ -1,6 +1,7 @@
 import requests
 import json
 from datetime import datetime
+from check_activity_users_daily import GB_GET_CLIENT
 
 async def delete_client(session, ip, uuid, web_base_path):
     print(f"{uuid} in delete")
@@ -64,7 +65,7 @@ async def check_connections(row, db_serv, web_base_path):
 
         spent_gb = await refresh_spent_gb(session, row[4], username, web_base_path)
 
-        if spent_gb >= 65:
+        if spent_gb >= GB_GET_CLIENT:
             print("gb plaki")
             await delete_client(session, row[4], row[3], web_base_path)
             return [2, 0]

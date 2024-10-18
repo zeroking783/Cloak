@@ -424,9 +424,11 @@ async def it_is_new_create_connection(user_id):
     otvet = await db.fetchval(query, user_id)
     return otvet
 
+
+# Функция проверяет наличие клиента у пользователя
 async def check_wait_approve_pay(user_id):
     query = """
-        SELECT payments_processed, payments_approval
+        SELECT payment_processed, payment_approval
         FROM payments_record
         WHERE user_id = $1
         AND id_payment = (
@@ -438,14 +440,14 @@ async def check_wait_approve_pay(user_id):
 
     result = await db.fetchrow(query, user_id)
 
-    payments_processed = result['payments_processed']
-    payments_approval = result['payments_approval']
+    payment_processed = result['payment_processed']
+    payment_approval = result['payment_approval']
 
-    if payments_processed == False and payments_approval == False:
+    if payment_processed == False and payment_approval == False:
         return "not_connection"
-    elif payments_processed == True and payments_approval == False:
+    elif payment_processed == True and payment_approval == False:
         return "wait_approve"
-    elif payments_processed == True and payments_approval == True:
+    elif payment_processed == True and payment_approval == True:
         return "have_connection"
 
 

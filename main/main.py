@@ -1,6 +1,10 @@
 import asyncio
+from turtledemo.sorting_animate import instructions1
+
 from aiogram import Bot, Dispatcher, types
 from dotenv import load_dotenv
+from pygments.lexers.webassembly import builtins
+
 from connect_database import *
 from aiogram.filters import Command
 from aiogram.enums import ParseMode
@@ -69,17 +73,7 @@ async def cmd_start(message: types.Message):
 # Главное меню
 async def send_main_menu(message):
 
-    try:
-        if await get_user_state(message.from_user.id) == "input_name":
-            query_get_instruction_id = "SELECT instruction_id FROM users WHERE user_id = $1"
-            instruction_id = await db.fetchval(query_get_instruction_id, message.from_user.id)
-
-            if instruction_id:
-                await bot.delete_message(message.chat.id, instruction_id)
-
-        await update_state(message.from_user.id, "main")
-    except Exception as e:
-        logging.error(f"Ошибка при удалении регистрационной инструкции: {e}")
+    await update_state(message.from_user.id, "main")
 
     query = "SELECT name_client FROM users WHERE user_id = $1"
     name_client = await db.fetchval(query, message.from_user.id)
@@ -180,6 +174,59 @@ async def send_main_menu(message):
                 parse_mode=ParseMode.HTML,
                 reply_markup=builder_user.as_markup()
         )
+
+
+# Обработка рефералов
+@dp.callback_query(F.data == "referal_menu")
+async def referal_menu(callback: types.CallbackQuery):
+
+    await callback.answer(
+        text="Это меню находится в разработке",
+        show_alert="True"
+    )
+
+
+# Обработка рефералов
+@dp.callback_query(F.data == "users_referals")
+async def referal_menu(callback: types.CallbackQuery):
+    await callback.answer(
+        text="Это меню находится в разработке",
+        show_alert="True"
+    )
+
+
+@dp.callback_query(F.data == "instruction_menu")
+async def referal_menu(callback: types.CallbackQuery):
+
+    await bot.delete_message(callback.message.chat.id, callback.message.message_id)
+
+    builder = InlineKeyboardBuilder()
+    builder.add(
+        types.InlineKeyboardButton(
+            text="IOS",
+            callback_data="instruction_install_ios"),
+        types.InlineKeyboardButton(
+            text="Windows",
+            callback_data="instruction_install_windows"),
+        types.InlineKeyboardButton(
+            text="Linux (Ubuntu 22)",
+            callback_data="instruction_install_ubuntu"),
+        types.InlineKeyboardButton(
+            text="MacOS",
+            callback_data="instruction_install_Mac"
+        )
+    )
+
+
+    await bot.send_message(
+        callback.message.from_user.id,
+        "Где будет работать VPN?"
+    )
+
+    await callback.answer(
+        text="Это меню надо сделать до выхода",
+        show_alert="True"
+    )
 
 
 # Кнопка, которая создает новое подключение
@@ -390,6 +437,15 @@ async def save_name_user(message: types.Message):
     if await get_user_state(message.from_user.id) == "input_name":
         query = "UPDATE users SET name_client = $1 WHERE user_id = $2"
         await db.execute(query, message.text, message.from_user.id)
+
+        query_get_instruction_id = "SELECT instruction_id FROM users WHERE user_id = $1"
+        instruction_id = await db.fetchval(query_get_instruction_id, message.from_user.id)
+
+        try:
+            await bot.delete_message(message.chat.id, instruction_id)
+        except Exception as e:
+            logging.error(f"Ошибка при удалении инструкции регистрации: {e}")
+
         await send_main_menu(message)
     else:
         await bot.delete_message(message.chat.id, message.message_id)

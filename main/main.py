@@ -427,7 +427,8 @@ async def registration_procedure(callback: types.CallbackQuery):
             "<i>Если будут отправлены не те данные, то админ не сможет удостовериться в вашем переводе</i>"
         ),
         chat_id=callback.message.chat.id,
-        parse_mode=ParseMode.HTML
+        parse_mode=ParseMode.HTML,
+        reply_markup=builder.as_markup()
     )
 
     await save_useless_message(instruction_message.message_id, callback.from_user.id)

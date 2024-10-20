@@ -56,14 +56,7 @@ async def cmd_main(message: types.Message):
         logging.error(f"Ошибка при вызове /main: {e}")
 
 
-# Вызов главного меню командой (Пока просто нет такой кнопки)
-# @dp.message(Command("main_menu"))
-# async def main_menu_command(message: types.Message):
-#     await update_state(message.from_user.id, "main")
-#     await bot.delete_message(message.chat.id, message.message_id)
-#     if not await get_user_state(message.from_user.id) == "main":
-#         await send_main_menu(message.from_user.id, message.from_user.username)
-
+# Вызов главного меню кнопкой
 @dp.callback_query(F.data == "main_menu")
 async def main_menu(callback: types.CallbackQuery):
     try:
@@ -221,7 +214,10 @@ async def instruction_menu(callback: types.CallbackQuery):
             callback_data="instruction_install_ubuntu"),
         types.InlineKeyboardButton(
             text="MacOS",
-            callback_data="instruction_install_Mac"
+            callback_data="instruction_install_Mac"),
+        types.InlineKeyboardButton(
+            text="Главное меню",
+            callback_data="main_menu"
         )
     )
 
@@ -230,11 +226,6 @@ async def instruction_menu(callback: types.CallbackQuery):
         callback.message.from_user.id,
         "Где будет работать VPN?",
         reply_markup=builder.as_markup()
-    )
-
-    await callback.answer(
-        text="Это меню надо сделать до выхода",
-        show_alert="True"
     )
 
 

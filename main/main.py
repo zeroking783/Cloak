@@ -186,7 +186,7 @@ async def referal_menu(callback: types.CallbackQuery):
 
 # Обработка рефералов
 @dp.callback_query(F.data == "users_referals")
-async def referal_menu(callback: types.CallbackQuery):
+async def users_referals(callback: types.CallbackQuery):
     await callback.answer(
         text="Это меню находится в разработке",
         show_alert="True"
@@ -194,7 +194,7 @@ async def referal_menu(callback: types.CallbackQuery):
 
 
 @dp.callback_query(F.data == "instruction_menu")
-async def referal_menu(callback: types.CallbackQuery):
+async def instruction_menu(callback: types.CallbackQuery):
 
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
@@ -218,7 +218,8 @@ async def referal_menu(callback: types.CallbackQuery):
 
     await bot.send_message(
         callback.message.from_user.id,
-        "Где будет работать VPN?"
+        "Где будет работать VPN?",
+        reply_markup=builder.as_markup()
     )
 
     await callback.answer(

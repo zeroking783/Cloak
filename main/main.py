@@ -35,7 +35,7 @@ async def cmd_start(message: types.Message):
     try:
         await update_state(message.from_user.id, "start")
 
-        query = "INSERT INTO users (user_id, username, state, instruction_id) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO NOTHING"
+        query = "INSERT INTO users (user_id, username, state, useless_message) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO NOTHING"
         await db.execute(query, message.from_user.id, message.from_user.username, "start", 1)
 
         await send_main_menu(message)
@@ -67,6 +67,9 @@ async def cmd_start(message: types.Message):
 
 # Главное меню
 async def send_main_menu(message):
+
+    await delete_useless_message(message.chat.id, message.from_user.id)
+
 
     await update_state(message.from_user.id, "main")
 
@@ -419,9 +422,7 @@ async def registration_procedure(callback: types.CallbackQuery):
         parse_mode=ParseMode.HTML
     )
 
-    query_save_instruction_id = "UPDATE users SET instruction_id = $1 WHERE user_id = $2"
-    await db.execute(query_save_instruction_id, instruction_message.message_id, callback.from_user.id)
-
+    await save_useless_message(instruction_message.message_id, callback.from_user.id)
 
 
 # Функция обрабатывает все обычные сообщения от пользователя, пока только ввод имени отчества
@@ -434,13 +435,7 @@ async def save_name_user(message: types.Message):
 
         await bot.delete_message(message.chat.id, message.message_id)
 
-        query_get_instruction_id = "SELECT instruction_id FROM users WHERE user_id = $1"
-        instruction_id = await db.fetchval(query_get_instruction_id, message.from_user.id)
-
-        try:
-            await bot.delete_message(message.chat.id, instruction_id)
-        except Exception as e:
-            logging.error(f"Ошибка при удалении инструкции регистрации: {e}")
+        await delete_useless_message(message.chat.id, message.from_user.id)
 
         await send_main_menu(message)
     else:
@@ -505,6 +500,30 @@ async def it_is_new_create_connection(user_id):
              "END as result;")
     otvet = await db.fetchval(query, user_id)
     return otvet
+
+
+# Получить useless_message_id
+async def get_useless_message(user_id):
+    query_get_message_id = "SELECT useless_message FROM users WHERE user_id = $1"
+    get_message_id = await db.fetchval(query_get_message_id, user_id)
+    return get_message_id
+
+
+# Обновляет useless_message в users
+async def save_useless_message(message_id, user_id):
+    query_save_message_id = "UPDATE users SET useless_message = $1 WHERE user_id = $2"
+    await db.execute(query_save_message_id, message_id, user_id)
+
+
+# Функция удаляет информатические сообщения
+async def delete_useless_message(chat_id, user_id):
+    query_message_id = "SELECT useless_message FROM users WHERE user_id = $1"
+    message_id = await db.fetchval(query_message_id, user_id)
+
+    try:
+        await bot.delete_message(chat_id, message_id)
+    except Exception as e:
+        logging.error(f"У меня почему-то не удалось удалить сообщение от пользователя {user_id}: {e}")
 
 
 # Функция проверяет наличие клиента у пользователя

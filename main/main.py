@@ -407,6 +407,13 @@ async def approve_payment(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == "registration")
 async def registration_procedure(callback: types.CallbackQuery):
+    builder = InlineKeyboardBuilder()
+    builder.add(
+        types.InlineKeyboardButton(
+            text="Главное меню",
+            callback_data="main_menu")
+    )
+    builder.adjust(1)
 
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 

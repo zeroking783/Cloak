@@ -63,9 +63,8 @@ async def main_menu(callback: types.CallbackQuery):
         if not await get_user_state(callback.message.from_user.id) == "main":
             await send_main_menu(callback.message)
 
-        await bot.delete_message(callback.message.chat.id, callback.message.message_id)
     except Exception as e:
-        logging.error(f"Ошибка при вызове /main: {e}")
+        logging.error(f"Ошибка при вызове /main кнопкой: {e}")
 
 
 # Главное меню

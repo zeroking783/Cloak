@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        customWorkspace('/home/Project')  // Указываем путь для временных файлов
+    }
+
     stages {
         stage('My-pipeline') {
             steps {

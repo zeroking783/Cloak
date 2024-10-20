@@ -56,17 +56,6 @@ async def cmd_main(message: types.Message):
         logging.error(f"Ошибка при вызове /main: {e}")
 
 
-# Вызов главного меню кнопкой
-@dp.callback_query(F.data == "main_menu")
-async def main_menu(callback: types.CallbackQuery):
-    try:
-        if not await get_user_state(callback.message.from_user.id) == "main":
-            await send_main_menu(callback.message)
-
-    except Exception as e:
-        logging.error(f"Ошибка при вызове /main кнопкой: {e}")
-
-
 # Главное меню
 async def send_main_menu(message):
 
@@ -564,6 +553,17 @@ async def check_wait_approve_pay(user_id):
         return "wait_approve"
     elif payment_processed == True and payment_approval == True:
         return "have_connection"
+
+
+# Вызов главного меню кнопкой
+@dp.callback_query(F.data == "main_menu")
+async def main_menu(callback: types.CallbackQuery):
+    try:
+        if not await get_user_state(callback.message.from_user.id) == "main":
+            await send_main_menu(callback.message)
+
+    except Exception as e:
+        logging.error(f"Ошибка при вызове /main кнопкой: {e}")
 
 
 async def main():

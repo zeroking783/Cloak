@@ -1,10 +1,6 @@
 import asyncio
-from turtledemo.sorting_animate import instructions1
-
 from aiogram import Bot, Dispatcher, types
 from dotenv import load_dotenv
-from pygments.lexers.webassembly import builtins
-
 from connect_database import *
 from aiogram.filters import Command
 from aiogram.enums import ParseMode
@@ -12,7 +8,6 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import F
 import os
 import logging
-
 from find_empty_server import find_server
 from new_client import *
 

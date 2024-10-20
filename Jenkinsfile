@@ -20,16 +20,16 @@ pipeline {
             }
         }
 
-        stage('Delete Last Docker Compose') {
-            steps {
-                script {
-                    dir('/home/Project/Cloak') {  // Добавляем dir
-                        echo '========start delete last docker-compose========'
-                        sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env down -v'
-                    }
-                }
-            }
-        }
+//         stage('Delete Last Docker Compose') {
+//             steps {
+//                 script {
+//                     dir('/home/Project/Cloak') {  // Добавляем dir
+//                         echo '========start delete last docker-compose========'
+//                         sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env down -v'
+//                     }
+//                 }
+//             }
+//         }
 
         stage('Build Docker Compose') {
             steps {
@@ -37,7 +37,7 @@ pipeline {
                     dir('/home/Project/Cloak') {  // Добавляем dir
                         echo '========start build docker-compose========'
                         sh 'cp /home/Project/Cloak_secrets/crontab /home/Project/Cloak/daily'
-                        sh 'docker-compose build'
+                        sh 'docker-compose build main_app cleaning_old_users'
                     }
                 }
             }
@@ -48,7 +48,7 @@ pipeline {
                 script {
                     dir('/home/Project/Cloak') {  // Добавляем dir
                         echo '========up docker-compose========'
-                        sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env up -d'
+                        sh 'docker-compose --env-file /home/Project/Cloak_secrets/.env up -d main_app cleaning_old_users'
                     }
                 }
             }

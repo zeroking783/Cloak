@@ -419,8 +419,6 @@ async def registration_procedure(callback: types.CallbackQuery):
         parse_mode=ParseMode.HTML
     )
 
-    logging.info(f"Вот id instruction_message: {instruction_message}")
-
     query_save_instruction_id = "UPDATE users SET instruction_id = $1 WHERE user_id = $2"
     await db.execute(query_save_instruction_id, instruction_message.message_id, callback.from_user.id)
 
@@ -433,6 +431,8 @@ async def save_name_user(message: types.Message):
     if await get_user_state(message.from_user.id) == "input_name":
         query = "UPDATE users SET name_client = $1 WHERE user_id = $2"
         await db.execute(query, message.text, message.from_user.id)
+
+        await bot.delete_message(message.chat.id, message.message_id)
 
         query_get_instruction_id = "SELECT instruction_id FROM users WHERE user_id = $1"
         instruction_id = await db.fetchval(query_get_instruction_id, message.from_user.id)

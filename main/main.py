@@ -45,7 +45,7 @@ async def cmd_start(message: types.Message):
         logging.error(f"Ошибка при вызове /start: {e}")
 
 @dp.message(Command("main"))
-async def cmd_start(message: types.Message):
+async def cmd_main(message: types.Message):
 
     try:
         if not await get_user_state(message.from_user.id) == "main":
@@ -57,12 +57,22 @@ async def cmd_start(message: types.Message):
 
 
 # Вызов главного меню командой (Пока просто нет такой кнопки)
-# @dp.message(Command("main"))
+# @dp.message(Command("main_menu"))
 # async def main_menu_command(message: types.Message):
 #     await update_state(message.from_user.id, "main")
 #     await bot.delete_message(message.chat.id, message.message_id)
 #     if not await get_user_state(message.from_user.id) == "main":
 #         await send_main_menu(message.from_user.id, message.from_user.username)
+
+@dp.callback_query(F.data == "main_menu")
+async def main_menu(callback: types.CallbackQuery):
+    try:
+        if not await get_user_state(callback.message.from_user.id) == "main":
+            await send_main_menu(callback.message)
+
+        await bot.delete_message(callback.message.chat.id, callback.message.message_id)
+    except Exception as e:
+        logging.error(f"Ошибка при вызове /main: {e}")
 
 
 # Главное меню

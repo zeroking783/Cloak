@@ -422,8 +422,7 @@ async def registration_procedure(callback: types.CallbackQuery):
     logging.info(f"Вот id instruction_message: {instruction_message}")
 
     query_save_instruction_id = "UPDATE users SET instruction_id = $1 WHERE user_id = $2"
-    await db.execute(query_save_instruction_id, instruction_message, callback.from_user.id)
-
+    await db.execute(query_save_instruction_id, instruction_message.message_id, callback.from_user.id)
 
 
 

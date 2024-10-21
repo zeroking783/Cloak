@@ -385,8 +385,6 @@ async def approve_payment(callback: types.CallbackQuery):
     logging.info(f"!!!!! USER_ID : {user_id}")
     logging.info(f"!!!! INFO_CONNECTIONS: {info_connections}")
 
-    await send_main_menu(user_id, username, chat_id)
-
 
 @dp.callback_query(F.data.startswith("reject_payment:"))
 async def approve_payment(callback: types.CallbackQuery):

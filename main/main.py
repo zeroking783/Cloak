@@ -59,8 +59,8 @@ async def cmd_main(message: types.Message):
 # Главное меню
 async def send_main_menu(message):
 
-    await delete_useless_message(message.chat.id, message.from_user.id)
-
+    if not await get_user_state(message.from_user.id) == "main":
+        await delete_useless_message(message.chat.id, message.from_user.id)
 
     await update_state(message.from_user.id, "main")
 
@@ -205,7 +205,7 @@ async def instruction_menu(callback: types.CallbackQuery):
             callback_data="instruction_install_Mac"),
         types.InlineKeyboardButton(
             text="Главное меню",
-            callback_data="main_menu"
+            callback_data="main"
         )
     )
 
@@ -559,7 +559,7 @@ async def check_wait_approve_pay(user_id):
 @dp.callback_query(F.data == "main_menu")
 async def main_menu(callback: types.CallbackQuery):
     try:
-        if not await get_user_state(callback.message.from_user.id) == "main":
+        if not await get_user_state(callback.from_user.id) == "main":
             await send_main_menu(callback.message)
 
     except Exception as e:

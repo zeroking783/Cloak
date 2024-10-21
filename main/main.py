@@ -558,9 +558,11 @@ async def check_wait_approve_pay(user_id):
 # Вызов главного меню кнопкой
 @dp.callback_query(F.data == "main_menu")
 async def main_menu(callback: types.CallbackQuery):
+
+    logging.info(f"Вот такой callback у кнопки Главное меню: {callback}")
+
     try:
-        if not await get_user_state(callback.from_user.id) == "main":
-            await send_main_menu(callback.message)
+        await send_main_menu(callback.message)
 
     except Exception as e:
         logging.error(f"Ошибка при вызове /main кнопкой: {e}")

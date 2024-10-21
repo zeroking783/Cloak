@@ -3,6 +3,8 @@ from math import expm1
 
 from aiogram import Bot, Dispatcher, types
 from dotenv import load_dotenv
+from pyexpat.errors import messages
+
 from connect_database import *
 from aiogram.filters import Command
 from aiogram.enums import ParseMode
@@ -577,11 +579,15 @@ async def main_menu(callback: types.CallbackQuery):
 
     logging.info(f"Вот такой callback у кнопки Главное меню: {callback}")
 
-    try:
-        user_id = callback.from_user.id
-        username = callback.from_user.username
-        chat_id = callback.message.chat.id if callback.message else user_id
+    user_id = callback.from_user.id
+    username = callback.from_user.username
+    chat_id = callback.message.chat.id if callback.message else user_id
+    message_id = callback.message.message_id
 
+    if await get_user_state(callback.from_user.id) == "main":
+        await bot.delete_message(chat_id, message_id)
+
+    try:
         await send_main_menu(user_id, username, chat_id)
 
     except Exception as e:

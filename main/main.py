@@ -38,7 +38,7 @@ async def cmd_start(message: types.Message):
         query = "INSERT INTO users (user_id, username, state, useless_message) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO NOTHING"
         await db.execute(query, message.from_user.id, message.from_user.username, "start", 1)
 
-        await send_main_menu(message)
+        await send_main_menu(message.from_user.id, message.chat.id, message.from_user.username)
 
         await bot.delete_message(message.chat.id, message.message_id)
     except Exception as e:
@@ -49,7 +49,7 @@ async def cmd_main(message: types.Message):
 
     try:
         if not await get_user_state(message.from_user.id) == "main":
-            await send_main_menu(message)
+            await send_main_menu(message.from_user.id, message.chat.id, message.from_user.username)
 
         await bot.delete_message(message.chat.id, message.message_id)
     except Exception as e:
@@ -57,15 +57,15 @@ async def cmd_main(message: types.Message):
 
 
 # Главное меню
-async def send_main_menu(message):
+async def send_main_menu(user_id, username, chat_id):
 
-    if not await get_user_state(message.from_user.id) == "main":
-        await delete_useless_message(message.chat.id, message.from_user.id)
+    if not await get_user_state(user_id) == "main":
+        await delete_useless_message(chat_id, user_id)
 
-    await update_state(message.from_user.id, "main")
+    await update_state(user_id, "main")
 
     query = "SELECT name_client FROM users WHERE user_id = $1"
-    name_client = await db.fetchval(query, message.from_user.id)
+    name_client = await db.fetchval(query, user_id)
 
     builder_full = InlineKeyboardBuilder()
     builder_full.add(
@@ -101,22 +101,22 @@ async def send_main_menu(message):
     )
     builder_user.adjust(1)
 
-    logging.info(str(await check_wait_approve_pay(message.from_user.id)))
+    logging.info(str(await check_wait_approve_pay(user_id)))
 
     # Проверяем, имеет ли пользователь активное подключение
-    if await check_wait_approve_pay(message.from_user.id) == "have_connection":
+    if await check_wait_approve_pay(user_id) == "have_connection":
         # Пользователь имеет активное подключение
         query_info_connection = """
         SELECT url_client, paid_up_to_time, spent_gb
         FROM connections
         WHERE user_id = $1
         """
-        info_connection = await db.fetchrow(query_info_connection, message.from_user.id)
+        info_connection = await db.fetchrow(query_info_connection, user_id)
 
         await bot.send_message(
-            message.from_user.id,
-            f"tg_username: <b>{message.from_user.username}</b>\n"
-            f"tg_id: <b>{message.from_user.id}</b>\n"
+            user_id,
+            f"tg_username: <b>{username}</b>\n"
+            f"tg_id: <b>{user_id}</b>\n"
             f"У тебя есть активное подключение\n"
             f"Активно до:\n"
             f"<b>{info_connection['paid_up_to_time']}</b>\n"
@@ -130,13 +130,13 @@ async def send_main_menu(message):
             reply_markup=builder_user.as_markup()
         )
     # Пользователь не имеет активного подключения
-    elif await check_wait_approve_pay(message.from_user.id) == "not_connection":
+    elif await check_wait_approve_pay(user_id) == "not_connection":
         # Пользователь зарегестрирован
-        if await db.fetchval(query, message.from_user.id):
+        if await db.fetchval(query, user_id):
             await bot.send_message(
-                message.from_user.id,
-                f"tg_username: <b>{message.from_user.username}</b>\n"
-                f"tg_id: <b>{message.from_user.id}</b>\n"
+                user_id,
+                f"tg_username: <b>{username}</b>\n"
+                f"tg_id: <b>{user_id}</b>\n"
                 f"Регистрационное имя:\n"
                 f"<b>{name_client}</b>",
                 parse_mode=ParseMode.HTML,
@@ -145,18 +145,18 @@ async def send_main_menu(message):
         # Пользователь не зарегестрирован
         else:
             await bot.send_message(
-                message.from_user.id,
-                f"@tg_username: <b>{message.from_user.username}</b>\n"
-                f"@tg_id: <b>{message.from_user.id}</b>\n",
+                user_id,
+                f"@tg_username: <b>{username}</b>\n"
+                f"@tg_id: <b>{user_id}</b>\n",
                 parse_mode=ParseMode.HTML,
                 reply_markup=builder_full.as_markup()
             )
     # Пользователь ожидает одобрение админа
-    elif await check_wait_approve_pay(message.from_user.id) == "wait_approve":
+    elif await check_wait_approve_pay(user_id) == "wait_approve":
         await bot.send_message(
-            message.from_user.id,
-             f"tg_username: <b>{message.from_user.username}</b>\n"
-                f"tg_id: <b>{message.from_user.id}</b>\n"
+            user_id,
+             f"tg_username: <b>{username}</b>\n"
+                f"tg_id: <b>{user_id}</b>\n"
                 f"<b>ОЖИДАЕТ ПОДТВЕРЖДЕНИЯ\n</b>"
                 f"Регистрационное имя:\n"
                 f"<b>{name_client}</b>",
@@ -272,7 +272,7 @@ async def create_connections(callback: types.CallbackQuery):
 
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
-    await send_main_menu(callback.message)
+    await send_main_menu(callback.message.from_user.id, callback.message.chat.id, callback.message.from_user.username)
 
     query_2 = """
     SELECT id_payment FROM payments_record WHERE user_id = $1 AND payment_processed = True AND payment_approval = False
@@ -562,7 +562,11 @@ async def main_menu(callback: types.CallbackQuery):
     logging.info(f"Вот такой callback у кнопки Главное меню: {callback}")
 
     try:
-        await send_main_menu(callback.message)
+        user_id = callback.from_user.id
+        username = callback.from_user.username
+        chat_id = callback.message.chat.id if callback.message else user_id
+
+        await send_main_menu(user_id, username, chat_id)
 
     except Exception as e:
         logging.error(f"Ошибка при вызове /main кнопкой: {e}")

@@ -1,4 +1,6 @@
 import asyncio
+from math import expm1
+
 from aiogram import Bot, Dispatcher, types
 from dotenv import load_dotenv
 from connect_database import *
@@ -272,7 +274,14 @@ async def create_connections(callback: types.CallbackQuery):
 
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
-    await send_main_menu(callback.message.from_user.id, callback.message.chat.id, callback.message.from_user.username)
+    try:
+        user_id = callback.from_user.id
+        username = callback.from_user.username
+        chat_id = callback.message.chat.id if callback.message else user_id
+
+        await send_main_menu(user_id, username, chat_id)
+    except Exception as e:
+        logging.error(f"Не отправилось меню в в оплате: {e}")
 
     query_2 = """
     SELECT id_payment FROM payments_record WHERE user_id = $1 AND payment_processed = True AND payment_approval = False
@@ -435,7 +444,7 @@ async def save_name_user(message: types.Message):
 
         await delete_useless_message(message.chat.id, message.from_user.id)
 
-        await send_main_menu(message)
+        await send_main_menu(message.from_user.id, message.from_user.username, message.chat.id)
     else:
         await bot.delete_message(message.chat.id, message.message_id)
 

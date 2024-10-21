@@ -85,7 +85,11 @@ async def send_main_menu(user_id, username, chat_id):
             callback_data="users_referals"),
         types.InlineKeyboardButton(
             text="Регистрация",
-            callback_data="registration")
+            callback_data="registration"),
+        types.InlineKeyboardButton(
+            text="Обновить",
+            callback_data="main_menu"
+        )
     )
     builder_full.adjust(1)
 
@@ -99,7 +103,11 @@ async def send_main_menu(user_id, username, chat_id):
             callback_data="referal_menu"),
         types.InlineKeyboardButton(
             text="Мои рефералы",
-            callback_data="users_referals")
+            callback_data="users_referals"),
+        types.InlineKeyboardButton(
+            text="Обновить",
+            callback_data="main_menu"
+        )
     )
     builder_user.adjust(1)
 
@@ -351,6 +359,7 @@ async def approve_payment(callback: types.CallbackQuery):
     user_id_username = await db.fetchrow(query_2, id_payment)
     user_id = user_id_username['user_id']
     username = user_id_username['username']
+    chat_id = callback.message.chat.id if callback.message else user_id
     best_server = await find_server()
     best_server.append(username)
     best_server.append(user_id)
@@ -373,10 +382,8 @@ async def approve_payment(callback: types.CallbackQuery):
 
     logging.info(f"!!!!! USER_ID : {user_id}")
     logging.info(f"!!!! INFO_CONNECTIONS: {info_connections}")
-    await bot.send_message(
-        user_id,
-        text=info_connections[0]
-    )
+
+    await send_main_menu(user_id, username, chat_id)
 
 
 @dp.callback_query(F.data.startswith("reject_payment:"))

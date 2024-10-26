@@ -385,6 +385,8 @@ async def approve_payment(callback: types.CallbackQuery):
     logging.info(f"!!!!! USER_ID : {user_id}")
     logging.info(f"!!!! INFO_CONNECTIONS: {info_connections}")
 
+    await bot.delete_message(chat_id, callback.message.message_id)
+
 
 @dp.callback_query(F.data.startswith("reject_payment:"))
 async def approve_payment(callback: types.CallbackQuery):
@@ -409,6 +411,8 @@ async def approve_payment(callback: types.CallbackQuery):
            """
 
     await db.execute(query_2, id_payment)
+
+    await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
 @dp.callback_query(F.data == "registration")
 async def registration_procedure(callback: types.CallbackQuery):

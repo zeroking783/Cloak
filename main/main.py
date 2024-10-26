@@ -265,7 +265,7 @@ async def create_connections(callback: types.CallbackQuery):
         await bot.send_message(
             callback.from_user.id,
             text="<b>Читай внимательно</b>\nТебе нужно "
-                 "отправить 40 рублей на Сбербанк по номеру телефона 89874410512. "
+                 "отправить 40 рублей на Сбербанк по номеру телефона 89874410512. В комментарии платежа напиши свой username в tg."
                  "После платежа обязательно нажми кнопку 'ОТПРАВИЛ' под этим сообщением. ",
             parse_mode=ParseMode.HTML,
             reply_markup=builder.as_markup()
@@ -385,11 +385,26 @@ async def approve_payment(callback: types.CallbackQuery):
     logging.info(f"!!!!! USER_ID : {user_id}")
     logging.info(f"!!!! INFO_CONNECTIONS: {info_connections}")
 
+    await send_main_menu(user_id, username, chat_id)
+
     await bot.delete_message(chat_id, callback.message.message_id)
 
 
 @dp.callback_query(F.data.startswith("reject_payment:"))
 async def approve_payment(callback: types.CallbackQuery):
+
+    builder_reject = InlineKeyboardBuilder()
+    builder_reject.add(
+        types.InlineKeyboardButton(
+            text="АДМИН",
+            callback_data="https://t.me/bakvivas"),
+        types.InlineKeyboardButton(
+            text="ГЛАВНОЕ МЕНЮ",
+            callback_data="main_menu"
+        )
+    )
+    builder_reject.adjust(1)
+
     id_payment = int(callback.data.split(":")[1])
 
     query_1 = """
@@ -399,11 +414,9 @@ async def approve_payment(callback: types.CallbackQuery):
             """
 
     user_id_username = await db.fetchrow(query_1, id_payment)
-
-    await bot.send_message(
-        user_id_username[0],
-        text="Я не нашел твоей платежки, если ты все таки оплачивал, то напиши админу"
-    )
+    user_id = user_id_username['user_id']
+    username = user_id_username['username']
+    chat_id = callback.message.chat.id if callback.message else user_id
 
     query_2 = """
            DELETE FROM payments_record
@@ -411,6 +424,12 @@ async def approve_payment(callback: types.CallbackQuery):
            """
 
     await db.execute(query_2, id_payment)
+
+    await bot.send_message(
+        chat_id,
+        text="Привет, я не нашел твоего платежа, если ты все таки оплачивал, то напиши админу",
+        reply_markup=builder_reject.as_markup()
+    )
 
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 

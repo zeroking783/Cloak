@@ -434,7 +434,7 @@ async def approve_payment(callback: types.CallbackQuery):
 async def del_message(callback: types.CallbackQuery):
 
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
-    await callback.answer("Это сообщение пропадет, так что пиши сейчас: https://t.me/bakvivas", show_alert=True)
+    await callback.answer("Это сообщение пропадет, так что пиши сейчас: @bakvivas", show_alert=True)
 
 @dp.callback_query(F.data == "registration")
 async def registration_procedure(callback: types.CallbackQuery):

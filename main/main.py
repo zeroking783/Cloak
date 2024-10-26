@@ -397,10 +397,7 @@ async def approve_payment(callback: types.CallbackQuery):
     builder_reject.add(
         types.InlineKeyboardButton(
             text="АДМИН",
-            callback_data="https://t.me/bakvivas"),
-        types.InlineKeyboardButton(
-            text="ГЛАВНОЕ МЕНЮ",
-            callback_data="main_menu"
+            callback_data="admin_and_del"
         )
     )
     builder_reject.adjust(1)
@@ -427,11 +424,17 @@ async def approve_payment(callback: types.CallbackQuery):
 
     await bot.send_message(
         chat_id,
-        text="Привет, я не нашел твоего платежа, если ты все таки оплачивал, то напиши админу",
+        text="Привет, я не нашел твоего платежа. Eсли ты все таки оплачивал, то напиши админу",
         reply_markup=builder_reject.as_markup()
     )
 
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
+
+@dp.callback_query(F.data == "admin_and_del")
+async def del_message(callback: types.CallbackQuery):
+
+    await bot.delete_message(callback.message.chat.id, callback.message.message_id)
+    await callback.answer("Это сообщение пропадет, так что пиши сейчас: https://t.me/bakvivas", show_alert=True)
 
 @dp.callback_query(F.data == "registration")
 async def registration_procedure(callback: types.CallbackQuery):

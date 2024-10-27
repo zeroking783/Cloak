@@ -432,7 +432,7 @@ async def approve_payment(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == "admin_and_del")
 async def del_message(callback: types.CallbackQuery):
-    await callback.answer("Это сообщение пропадет, так что пиши сейчас", show_alert=True)
+    await callback.answer("Это сообщение пропадет, так что пиши сейчас: @bakvivas", show_alert=True)
 
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
